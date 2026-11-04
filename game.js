@@ -52,6 +52,7 @@ function showOverlay(html) {
   o.querySelectorAll('button[data-act]').forEach((b) => { b.onclick = () => act(b.dataset.act); });
 }
 function hideOverlay() { $('overlay').classList.add('hidden'); $('bar').classList.remove('hidden'); }
+const lvButtons = (withDaily) => `<div class="lv"><button data-level="easy">쉬움<small>실수가 많아요</small></button><button data-level="normal">보통<small>덥석 안 줘요</small></button><button data-level="hard">어려움<small>끝까지 계산해요</small></button>${withDaily && window.arcadeDaily ? arcadeDaily.buttonHtml() : ''}</div>`;
 function showTitle() {
   clearTimeout(cpuTimer); G = null;
   const wins = +store.get(WINS_KEY) || 0;
@@ -60,7 +61,7 @@ function showTitle() {
     <p>점 사이에 번갈아 <b>선</b>을 그어요<br>네모의 마지막 변을 그으면 내 땅! <b>한 번 더</b> 둬요</p>
     <p class="help">땅을 더 많이 차지한 쪽이 이겨요.<br>세 번째 변을 그으면 상대에게 땅을 줘요</p>
     ${wins ? `<p class="note">컴퓨터를 이긴 횟수 ${wins}번</p>` : ''}${sizes}
-    <div class="lv"><button data-level="easy">쉬움<small>실수가 많아요</small></button><button data-level="normal">보통<small>덥석 안 줘요</small></button><button data-level="hard">어려움<small>끝까지 계산해요</small></button></div>`);
+    ${lvButtons(false)}`);
 }
 function act(a) { if (a === 'again') start(level); else if (a === 'menu') showTitle(); else if (a === 'undo') undo(); }
 
@@ -142,13 +143,14 @@ function finish() {
   r[key]++; rec[level] = r; store.set(RECORD_KEY, JSON.stringify(rec));
   if (key === 'w') store.set(WINS_KEY, String((+store.get(WINS_KEY) || 0) + 1));
   lastRecord = { level, key };
+  if (!TUTORIAL && window.arcadeRun) arcadeRun({ level: level === 'easy' ? 'easy' : 'normal', bad: key === 'l' });          // 연패 구제(로비): 연달아 지면 쉬움을 권함
   const title = key === 'w' ? '🎉 승리!' : key === 'l' ? '😵 패배' : '🤝 무승부';
   if (key === 'w') sfx.win(); else if (key === 'l') sfx.lose();
   const s = G.score, lab = D.LEVELS[level].label;
   setTimeout(() => {
     if (!G || !G.over) return;                     // 그 사이 무르기
     showOverlay(`<h2>${title}</h2><p class="big">${s[1]} : ${s[2]}</p><p class="help">${lab} · ${D.SIZES[G.n]} · ${r.w}승 ${r.l}패${r.d ? ` ${r.d}무` : ''}</p>
-      <button data-act="again">한 판 더</button>
+      <button data-act="again">한 판 더</button>${lvButtons(false)}
       <div style="display:flex;gap:8px"><button class="sub" data-act="undo">무르기</button><button class="sub" data-act="menu">메뉴</button></div>`);
   }, 900);
 }
