@@ -36,6 +36,7 @@ const sfx = {
   lose() { [392, 330, 262].forEach((f, i) => setTimeout(() => tone(f, 0.22, 'triangle', 0.06), i * 140)); },
   undo() { tone(400, 0.08, 'triangle', 0.04, -120); },
 };
+const vibe = (p) => { try { if (window.arcadeVibe) window.arcadeVibe(p); } catch (_) {} };   // 진동: 로비의 진동 설정을 따른다
 function toggleMute() { muted = !muted; store.set('dotsboxesMuted', muted ? '1' : '0'); $('muteBtn').textContent = muted ? '🔇' : '🔊'; }
 $('muteBtn').textContent = muted ? '🔇' : '🔊';
 
@@ -119,7 +120,7 @@ canvas.addEventListener('pointerleave', () => { hover = -1; });
 function humanPlay(edge) {
   const r = D.play(G, edge, D.HUMAN); if (!r) return;
   lastEdge = edge; sfx.line(); tutorialSignal('line');
-  if (r.boxes.length) { sfx.box(true); tutorialSignal('box'); r.boxes.forEach((b) => addFlash(b)); }
+  if (r.boxes.length) { sfx.box(true); vibe(25); tutorialSignal('box'); r.boxes.forEach((b) => addFlash(b)); }
   afterMove();
 }
 function afterMove() {
